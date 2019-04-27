@@ -168,7 +168,7 @@ Input_Volume()
 		fi
 	done
 	Input_On
-	read -e -p "/ " -p "/ " volume_name
+	read -e -p "/ " volume_name
 	Input_Off
 
 	volume_path="/Volumes/$volume_name"
