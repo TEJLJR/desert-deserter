@@ -269,6 +269,7 @@ Input_Operation()
 			echo ${text_message}"/     2 - Desert 6"${erase_style}
 			echo ${text_message}"/     3 - Mojave Day"${erase_style}
 			echo ${text_message}"/     4 - Mojave Night"${erase_style}
+			echo ${text_message}"/     5 - RMC"${erase_style}
 			Input_On
 			read -e -p "/ " operation_wallpaper
 			Input_Off
@@ -284,6 +285,9 @@ Input_Operation()
 			fi
 			if [[ $operation_wallpaper == "4" ]]; then
 				wallpaper="Mojave Night"
+			fi
+			if [[ $operation_wallpaper == "5" ]]; then
+				wallpaper="RMC"
 			fi
 	
 			Patch_Volume
@@ -337,11 +341,13 @@ Patch_Volume()
 	fi
 	echo ${move_up}${erase_line}${text_success}"+ Patched system icons."${erase_style}
 
+	echo ${text_progress}"> Copying system wallpapers."${erase_style}
 	if [[ $volume_version_short == "10.13" ]]; then
-		echo ${text_progress}"> Copying system wallpapers."${erase_style}
 		cp -R "$patch_resources_path"/wallpapers/ "$volume_path"/Library/Desktop\ Pictures/
-		echo ${move_up}${erase_line}${text_success}"+ Copied system wallpapers."${erase_style}
 	fi
+
+	cp "$patch_resources_path"/wallpapers/RMC.jpg "$volume_path"/Library/Desktop\ Pictures
+	echo ${move_up}${erase_line}${text_success}"+ Copied system wallpapers."${erase_style}
 	
 	echo ${text_progress}"> Patching system wallpapers."${erase_style}
 	if [[ $volume_version_short == "10.14" ]]; then
@@ -412,15 +418,17 @@ Revert_Volume()
 	fi
 	echo ${move_up}${erase_line}${text_success}"+ Removed system icons."${erase_style}
 
+	echo ${text_progress}"> Removing system wallpapers."${erase_style}
 	if [[ $volume_version_short == "10.13" ]]; then
-		echo ${text_progress}"> Removing system wallpapers."${erase_style}
 		rm "$volume_path"/Library/Desktop\ Pictures/Desert\ 5.jpg
 		rm "$volume_path"/Library/Desktop\ Pictures/Desert\ 6.jpg
 		rm "$volume_path"/Library/Desktop\ Pictures/Mojave\ Day.jpg
 		rm "$volume_path"/Library/Desktop\ Pictures/Mojave\ Night.jpg
-		echo ${move_up}${erase_line}${text_success}"+ Removed system wallpapers."${erase_style}
 	fi
 
+	rm "$volume_path"/Library/Desktop\ Pictures/RMC.jpg
+	echo ${move_up}${erase_line}${text_success}"+ Removed system wallpapers."${erase_style}
+	
 	echo ${text_progress}"> Removing system wallpapers."${erase_style}
 	if [[ $volume_version_short == "10.14" ]]; then
 		rm "$volume_path"/System/Library/CoreServices/DefaultBackground.jpg
