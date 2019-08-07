@@ -30,9 +30,6 @@ Parameter_Variables()
 		verbose="1"
 		set -x
 	fi
-	if [[ $parameters == *"-db"* || $parameters == *"-dev-black"* ]]; then
-		dev_black="1"
-	fi
 }
 
 Path_Variables()
@@ -177,29 +174,26 @@ Input_Volume()
 Check_Volume_Version()
 {
 	echo ${text_progress}"> Checking system version."${erase_style}	
-	volume_version="$(grep -A1 "ProductVersion" "$volume_path/$system_version_path")"
-
-	volume_version="${volume_version#*<string>}"
-	volume_version="${volume_version%</string>*}"
-
-	volume_version_short="${volume_version:0:5}"
+	volume_version="$(defaults read "$volume_path"/System/Library/CoreServices/SystemVersion.plist ProductVersion)"
+	volume_version_short="$(defaults read "$volume_path"/System/Library/CoreServices/SystemVersion.plist ProductVersion | cut -c-5)"
 	echo ${move_up}${erase_line}${text_success}"+ Checked system version."${erase_style}
+}
 
-	echo ${text_progress}"> Checking system support."${erase_style}
-	if [[ $volume_version_short == "10.13" || $volume_version_short == "10.14" ]]; then
-		volume_patch_supported="1"
-	fi
-
-	if [[ $volume_patch_supported == "1" ]]; then
-		echo ${move_up}${erase_line}${text_success}"+ System support check passed."${erase_style}
-	fi
-	if [[ ! $volume_patch_supported == "1" ]]; then
+Check_Volume_Support()
+{
+	echo ${text_progress}"> Checking installer support."${erase_style}
+	if [[ $volume_version_short == "10.1"[3-4] ]]; then
+		echo ${move_up}${erase_line}${text_success}"+ Sytem support check passed."${erase_style}
+	else
 		echo ${text_error}"- System support check failed."${erase_style}
 		echo ${text_message}"/ Run this tool on a supported system."${erase_style}
 		Input_On
 		exit
 	fi
+}
 
+Volume_Variables()
+{
 	if [[ -d "$volume_path"/"$machardwaretypes"/MacHardwareTypes-23D5DDDA06.bundle ]]; then
 		machardwaretypes_contents="1"
 	fi
@@ -231,30 +225,18 @@ Input_Operation()
 	Input_Off
 
 	if [[ $options == "1" || $options == "2" ]]; then
-		if [[ $operation == "1" ]]; then
-			operation="patch"
-		fi
-		if [[ $operation == "2" ]]; then
-			operation="revert"
-		fi
+		if [[ $operation == "1" ]]; then operation="patch"; fi
+		if [[ $operation == "2" ]]; then operation="revert"; fi
 	fi
 
 	if [[ $options == "1" ]]; then
-		if [[ $operation == "3" ]]; then
-			operation="patch_internet"
-		fi
-		if [[ $operation == "4" ]]; then
-			operation="revert_internet"
-		fi
+		if [[ $operation == "3" ]]; then operation="patch_internet"; fi
+		if [[ $operation == "4" ]]; then operation="revert_internet"; fi
 	fi
 
 	if [[ $options == "3" ]]; then
-		if [[ $operation == "1" ]]; then
-			operation="patch_internet"
-		fi
-		if [[ $operation == "2" ]]; then
-			operation="revert_internet"
-		fi
+		if [[ $operation == "1" ]]; then operation="patch_internet"; fi
+		if [[ $operation == "2" ]]; then operation="revert_internet"; fi
 	fi
 
 	if [[ $operation == "patch_internet" || $operation == "revert_internet" ]]; then
@@ -262,42 +244,32 @@ Input_Operation()
 	fi
 
 	if [[ $operation == "patch" || $operation == "patch_internet" ]]; then
-		if [[ ! $dev_black == "1" ]]; then
-			echo ${text_message}"/ What wallpaper would you like to use?"${erase_style}
-			echo ${text_message}"/ Input an operation number."${erase_style}
-			echo ${text_message}"/     1 - Desert 5"${erase_style}
-			echo ${text_message}"/     2 - Desert 6"${erase_style}
-			echo ${text_message}"/     3 - Mojave Day"${erase_style}
-			echo ${text_message}"/     4 - Mojave Night"${erase_style}
-			echo ${text_message}"/     5 - RMC"${erase_style}
-			Input_On
-			read -e -p "/ " operation_wallpaper
-			Input_Off
+		echo ${text_message}"/ What wallpaper would you like to use?"${erase_style}
+		echo ${text_message}"/ Input an operation number."${erase_style}
+		echo ${text_message}"/     1 - RMC"${erase_style}
+		echo ${text_message}"/     2 - Desert 5"${erase_style}
+		echo ${text_message}"/     3 - Desert 6"${erase_style}
+		echo ${text_message}"/     4 - Mojave Day"${erase_style}
+		echo ${text_message}"/     5 - Mojave Night"${erase_style}
+		echo ${text_message}"/     6 - High Sierra"${erase_style}
+		echo ${text_message}"/     7 - Sierra"${erase_style}
+		echo ${text_message}"/     8 - Catalina Light"${erase_style}
+		echo ${text_message}"/     9 - Catalina Dark"${erase_style}
+		Input_On
+		read -e -p "/ " operation_wallpaper
+		Input_Off
 	
-			if [[ $operation_wallpaper == "1" ]]; then
-				wallpaper="Desert 5"
-			fi
-			if [[ $operation_wallpaper == "2" ]]; then
-				wallpaper="Desert 6"
-			fi
-			if [[ $operation_wallpaper == "3" ]]; then
-				wallpaper="Mojave Day"
-			fi
-			if [[ $operation_wallpaper == "4" ]]; then
-				wallpaper="Mojave Night"
-			fi
-			if [[ $operation_wallpaper == "5" ]]; then
-				wallpaper="RMC"
-			fi
+		if [[ $operation_wallpaper == "1" ]]; then wallpaper="RMC"; fi
+		if [[ $operation_wallpaper == "2" ]]; then wallpaper="Desert 5"; fi
+		if [[ $operation_wallpaper == "3" ]]; then wallpaper="Desert 6"; fi
+		if [[ $operation_wallpaper == "4" ]]; then wallpaper="Mojave Day"; fi
+		if [[ $operation_wallpaper == "5" ]]; then wallpaper="Mojave Night"; fi
+		if [[ $operation_wallpaper == "6" ]]; then wallpaper="High Sierra"; fi
+		if [[ $operation_wallpaper == "7" ]]; then wallpaper="Sierra"; fi
+		if [[ $operation_wallpaper == "8" ]]; then wallpaper="Catalina Light"; fi
+		if [[ $operation_wallpaper == "9" ]]; then wallpaper="Catalina Dark"; fi
 	
-			Patch_Volume
-		fi
-
-		if [[ $dev_black == "1" ]]; then
-			wallpaper="dev-black"
-
-			Dev_Black
-		fi
+		Patch_Volume
 	fi
 
 	if [[ $operation == "revert" || $operation == "revert_internet" ]]; then
@@ -347,6 +319,8 @@ Patch_Volume()
 	fi
 
 	cp "$patch_resources_path"/wallpapers/RMC.jpg "$volume_path"/Library/Desktop\ Pictures
+	cp "$patch_resources_path"/wallpapers/Catalina\ Light.jpg "$volume_path"/Library/Desktop\ Pictures
+	cp "$patch_resources_path"/wallpapers/Catalina\ Dark.jpg "$volume_path"/Library/Desktop\ Pictures
 	echo ${move_up}${erase_line}${text_success}"+ Copied system wallpapers."${erase_style}
 	
 	echo ${text_progress}"> Patching system wallpapers."${erase_style}
@@ -389,6 +363,12 @@ Patch_Volume()
 		cp "$patch_resources_path"/"$wallpaper"/system/SystemLogo.tiff "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/
 	fi
 	echo ${move_up}${erase_line}${text_success}"+ Patched setup icons."${erase_style}
+
+	if [[ $volume_version_short == "10.14" ]]; then
+		echo ${text_progress}"> Patching preference panes icons."${erase_style}
+			cp "$patch_resources_path"/"$wallpaper"/appearance/Assets.car "$volume_path"/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/
+		echo ${move_up}${erase_line}${text_success}"+ Patched preference panes icons."${erase_style}
+	fi
 }
 
 Revert_Volume()
@@ -427,6 +407,8 @@ Revert_Volume()
 	fi
 
 	rm "$volume_path"/Library/Desktop\ Pictures/RMC.jpg
+	rm "$volume_path"/Library/Desktop\ Pictures/Catalina\ Light.jpg
+	rm "$volume_path"/Library/Desktop\ Pictures/Catalina\ Dark.jpg
 	echo ${move_up}${erase_line}${text_success}"+ Removed system wallpapers."${erase_style}
 	
 	echo ${text_progress}"> Removing system wallpapers."${erase_style}
@@ -469,24 +451,12 @@ Revert_Volume()
 		cp "$revert_resources_path"/system/SystemLogo.tiff "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/
 	fi
 	echo ${move_up}${erase_line}${text_success}"+ Removed setup icons."${erase_style}
-}
 
-Dev_Black()
-{
-	echo ${text_progress}"🌙 Patching device icons."${erase_style}
-	cp -R "$patch_resources_path"/"$wallpaper"/CoreTypes/ "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/
-
-	if [[ $machardwaretypes_contents == "1" ]]; then
-		cp -R "$patch_resources_path"/"$wallpaper"/MacHardwareTypes/ "$volume_path"/"$machardwaretypes"/MacHardwareTypes-23D5DDDA06.bundle/Contents/Resources/
+	if [[ $volume_version_short == "10.14" ]]; then
+		echo ${text_progress}"> Removing preference panes icons."${erase_style}
+			cp "$revert_resources_path"/appearance/Assets.car "$volume_path"/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/
+		echo ${move_up}${erase_line}${text_success}"+ Removed preference panes icons."${erase_style}
 	fi
-
-	if [[ $machardwaretypes_contents == "2" ]]; then
-		cp "$patch_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbook-retina-gold-2018.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018b.bundle/Contents/Resources
-		cp "$patch_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbookair-2018-gold.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018c.bundle/Contents/Resources
-		cp "$patch_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbookair-2018-silver.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018c.bundle/Contents/Resources
-		cp "$patch_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbookair-2018-space-gray.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018c.bundle/Contents/Resources
-	fi
-	echo ${move_up}${erase_line}${text_success}"🌙 Patched device icons."${erase_style}
 }
 
 Repair()
@@ -497,11 +467,7 @@ Repair()
 
 Repair_Permissions()
 {
-	if [[ $dev_black == "1" ]]; then
-		echo ${text_progress}"🌙 Repairing permissions."${erase_style}
-	else
-		echo ${text_progress}"> Repairing permissions."${erase_style}
-	fi
+	echo ${text_progress}"> Repairing permissions."${erase_style}
 
 	Repair "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/
 
@@ -558,29 +524,17 @@ Repair_Permissions()
 
 	Repair "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/
 
-	if [[ $dev_black == "1" ]]; then
-		echo ${move_up}${erase_line}${text_success}"🌙 Repaired permissions."${erase_style}
-	else
-		echo ${move_up}${erase_line}${text_success}"+ Repaired permissions."${erase_style}
-	fi
+	echo ${move_up}${erase_line}${text_success}"+ Repaired permissions."${erase_style}	
 }
 
 Rebuild_Cache()
 {
-	if [[ $dev_black == "1" ]]; then
-		echo ${text_progress}"🌙 Rebuilding cache."${erase_style}
-	else
-		echo ${text_progress}"> Rebuilding cache."${erase_style}
-	fi
+	echo ${text_progress}"> Rebuilding cache."${erase_style}
 
 	find "$volume_path"/private/var/folders/ -name com.apple.dock.iconcache -exec rm {} \;
 	rm -rf "$volume_path"/Library/Caches/com.apple.iconservices.store
 
-	if [[ $dev_black == "1" ]]; then
-		echo ${move_up}${erase_line}${text_success}"🌙 Rebuilt cache."${erase_style}
-	else
-		echo ${move_up}${erase_line}${text_success}"+ Rebuilt cache."${erase_style}
-	fi
+	echo ${move_up}${erase_line}${text_success}"+ Rebuilt cache."${erase_style}
 }
 
 Input_Restart()
@@ -621,6 +575,8 @@ Check_Internet
 Check_Options
 Input_Volume
 Check_Volume_Version
+Check_Volume_Support
+Volume_Variables
 Input_Operation
 Repair_Permissions
 Rebuild_Cache
