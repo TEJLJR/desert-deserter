@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 parameters="${1}${2}${3}${4}${5}${6}${7}${8}${9}"
 
@@ -41,14 +41,13 @@ Path_Variables()
 	revert_resources_path="$directory_path/resources/revert"
 
 	system_version_path="System/Library/CoreServices/SystemVersion.plist"
-
-	machardwaretypes="System/Library/CoreServices/CoreTypes.bundle/Contents/Library"
 }
 
 Input_Off()
 {
 	stty -echo
 }
+
 Input_On()
 {
 	stty echo
@@ -64,31 +63,31 @@ Output_Off() {
 
 Check_Environment()
 {
-	echo ${text_progress}"> Checking system environment."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Checking system environment."${erase_style}
 	if [ -d /Install\ *.app ]; then
 		environment="installer"
 	fi
 	if [ ! -d /Install\ *.app ]; then
 		environment="system"
 	fi
-	echo ${move_up}${erase_line}${text_success}"+ Checked system environment."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Checked system environment."${erase_style}
 }
 
 Check_Root()
 {
-	echo ${text_progress}"> Checking for root permissions."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Checking for root permissions."${erase_style}
 	if [[ $environment == "installer" ]]; then
 		root_check="passed"
-		echo ${move_up}${erase_line}${text_success}"+ Root permissions check passed."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Root permissions check passed."${erase_style}
 	else
 		if [[ $(whoami) == "root" && $environment == "system" ]]; then
 			root_check="passed"
-			echo ${move_up}${erase_line}${text_success}"+ Root permissions check passed."${erase_style}
+			echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Root permissions check passed."${erase_style}
 		fi
 		if [[ ! $(whoami) == "root" && $environment == "system" ]]; then
 			root_check="failed"
-			echo ${text_error}"- Root permissions check failed."${erase_style}
-			echo ${text_message}"/ Run this tool with root permissions."${erase_style}
+			echo -e $(date "+%b %m %H:%M:%S") ${text_error}"- Root permissions check failed."${erase_style}
+			echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Run this tool with root permissions."${erase_style}
 			Input_On
 			exit
 		fi
@@ -97,13 +96,14 @@ Check_Root()
 
 Check_SIP()
 {
-	echo ${text_progress}"> Checking System Integrity Protection status."${erase_style}
-	if [[ $(csrutil status) == *disabled* ]]; then
-		echo ${move_up}${erase_line}${text_success}"+ System Integrity Protection status check passed."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Checking System Integrity Protection status."${erase_style}
+
+	if [[ $(csrutil status | grep status) == *disabled* ]] || [[ $(csrutil status | grep status) == *Custom\ Configuration* && $(csrutil status | grep "Kext Signing") == *disabled* ]]; then
+		echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ System Integrity Protection status check passed."${erase_style}
 	fi
-	if [[ $(csrutil status) == *enabled* ]]; then
-		echo ${text_error}"- System Integrity Protection status check failed."${erase_style}
-		echo ${text_message}"/ Run this tool with System Integrity Protection disabled."${erase_style}
+	if [[ $(csrutil status | grep status) == *enabled* && ! $(csrutil status | grep status) == *Custom\ Configuration* ]] || [[ $(csrutil status | grep status) == *Custom\ Configuration* && $(csrutil status | grep "Kext Signing") == *enabled* ]]; then
+		echo -e $(date "+%b %m %H:%M:%S") ${text_error}"- System Integrity Protection status check failed."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Run this tool with System Integrity Protection disabled."${erase_style}
 		Input_On
 		exit
 	fi
@@ -111,25 +111,25 @@ Check_SIP()
 
 Check_Resources()
 {
-	echo ${text_progress}"> Checking for resources."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Checking for resources."${erase_style}
 	if [[ -d "$patch_resources_path" && -d "$revert_resources_path" ]]; then
 		resources_check="passed"
-		echo ${move_up}${erase_line}${text_success}"+ Resources check passed."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Resources check passed."${erase_style}
 	fi
 	if [[ ! -d "$patch_resources_path" || ! -d "$revert_resources_path" ]]; then
 		resources_check="failed"
-		echo ${text_error}"- Resources check failed."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_error}"- Resources check failed."${erase_style}
 	fi
 }
 
 Check_Internet()
 {
-	echo ${text_progress}"> Checking for internet conectivity."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Checking for internet conectivity."${erase_style}
 	if [[ $(ping -c 5 www.google.com) == *transmitted* && $(ping -c 5 www.google.com) == *received* ]]; then
-		echo ${move_up}${erase_line}${text_success}"+ Internet conectivity check passed."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Internet conectivity check passed."${erase_style}
 		internet_check="passed"
 	else
-		echo ${text_error}"- Internet conectivity check failed."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_error}"- Internet conectivity check failed."${erase_style}
 		internet_check="failed"
 	fi
 }
@@ -137,8 +137,8 @@ Check_Internet()
 Check_Options()
 {
 	if [[ $resources_check == "failed" && $internet_check == "failed" ]]; then
-		echo ${text_error}"- Resources check and internet conectivity check failed"${erase_style}
-		echo ${text_message}"/ Run this tool with the required resources and/or an internet connection."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_error}"- Resources check and internet conectivity check failed"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Run this tool with the required resources and/or an internet connection."${erase_style}
 		Input_On
 		exit
 	fi
@@ -156,16 +156,16 @@ Check_Options()
 
 Input_Volume()
 {
-	echo ${text_message}"/ What volume would you like to use?"${erase_style}
-	echo ${text_message}"/ Input a volume name."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ What volume would you like to use?"${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Input a volume name."${erase_style}
 	for volume_path in /Volumes/*; do 
 		volume_name="${volume_path#/Volumes/}"
 		if [[ ! "$volume_name" == com.apple* ]]; then
-			echo ${text_message}"/     ${volume_name}"${erase_style} | sort -V
+			echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     ${volume_name}"${erase_style} | sort
 		fi
 	done
 	Input_On
-	read -e -p "/ " volume_name
+	read -e -p "$(date "+%b %m %H:%M:%S") / " volume_name
 	Input_Off
 
 	volume_path="/Volumes/$volume_name"
@@ -173,55 +173,45 @@ Input_Volume()
 
 Check_Volume_Version()
 {
-	echo ${text_progress}"> Checking system version."${erase_style}	
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Checking system version."${erase_style}	
 	volume_version="$(defaults read "$volume_path"/System/Library/CoreServices/SystemVersion.plist ProductVersion)"
 	volume_version_short="$(defaults read "$volume_path"/System/Library/CoreServices/SystemVersion.plist ProductVersion | cut -c-5)"
-	echo ${move_up}${erase_line}${text_success}"+ Checked system version."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Checked system version."${erase_style}
 }
 
 Check_Volume_Support()
 {
-	echo ${text_progress}"> Checking installer support."${erase_style}
-	if [[ $volume_version_short == "10.1"[3-4] ]]; then
-		echo ${move_up}${erase_line}${text_success}"+ Sytem support check passed."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Checking installer support."${erase_style}
+	if [[ $volume_version_short == "10.1"[0-5] ]]; then
+		echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ System support check passed."${erase_style}
 	else
-		echo ${text_error}"- System support check failed."${erase_style}
-		echo ${text_message}"/ Run this tool on a supported system."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_error}"- System support check failed."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Run this tool on a supported system."${erase_style}
 		Input_On
 		exit
 	fi
 }
 
-Volume_Variables()
-{
-	if [[ -d "$volume_path"/"$machardwaretypes"/MacHardwareTypes-23D5DDDA06.bundle ]]; then
-		machardwaretypes_contents="1"
-	fi
-	if [[ -d "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018a.bundle ]]; then
-		machardwaretypes_contents="2"
-	fi
-}
-
 Input_Operation()
 {
-	echo ${text_message}"/ What operation would you like to run?"${erase_style}
-	echo ${text_message}"/ Input an operation number."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ What operation would you like to run?"${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Input an operation number."${erase_style}
 	if [[ $options == "1" || $options == "2" ]]; then
-		echo ${text_message}"/     1 - Patch"${erase_style}
-		echo ${text_message}"/     2 - Revert"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     1 - Patch"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     2 - Revert"${erase_style}
 	fi
 
 	if [[ $options == "1" ]]; then
-		echo ${text_message}"/     3 - Patch from internet"${erase_style}
-		echo ${text_message}"/     4 - Revert from internet"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     3 - Patch from internet"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     4 - Revert from internet"${erase_style}
 	fi
 
 	if [[ $options == "3" ]]; then
-		echo ${text_message}"/     1 - Patch from internet"${erase_style}
-		echo ${text_message}"/     2 - Revert from internet"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     1 - Patch from internet"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     2 - Revert from internet"${erase_style}
 	fi
 	Input_On
-	read -e -p "/ " operation
+	read -e -p "$(date "+%b %m %H:%M:%S") / " operation
 	Input_Off
 
 	if [[ $options == "1" || $options == "2" ]]; then
@@ -244,19 +234,21 @@ Input_Operation()
 	fi
 
 	if [[ $operation == "patch" || $operation == "patch_internet" ]]; then
-		echo ${text_message}"/ What wallpaper would you like to use?"${erase_style}
-		echo ${text_message}"/ Input an operation number."${erase_style}
-		echo ${text_message}"/     1 - RMC"${erase_style}
-		echo ${text_message}"/     2 - Desert 5"${erase_style}
-		echo ${text_message}"/     3 - Desert 6"${erase_style}
-		echo ${text_message}"/     4 - Mojave Day"${erase_style}
-		echo ${text_message}"/     5 - Mojave Night"${erase_style}
-		echo ${text_message}"/     6 - High Sierra"${erase_style}
-		echo ${text_message}"/     7 - Sierra"${erase_style}
-		echo ${text_message}"/     8 - Catalina Light"${erase_style}
-		echo ${text_message}"/     9 - Catalina Dark"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ What wallpaper would you like to use?"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Input an operation number."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     1 - RMC"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     2 - Desert 5"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     3 - Desert 6"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     4 - Mojave Day"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     5 - Mojave Night"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     6 - High Sierra"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     7 - Sierra"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     8 - Catalina Light"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     9 - Catalina Dark"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     10 - El Capitan"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     11 - Yosemite"${erase_style}
 		Input_On
-		read -e -p "/ " operation_wallpaper
+		read -e -p "$(date "+%b %m %H:%M:%S") / " operation_wallpaper
 		Input_Off
 	
 		if [[ $operation_wallpaper == "1" ]]; then wallpaper="RMC"; fi
@@ -268,6 +260,8 @@ Input_Operation()
 		if [[ $operation_wallpaper == "7" ]]; then wallpaper="Sierra"; fi
 		if [[ $operation_wallpaper == "8" ]]; then wallpaper="Catalina Light"; fi
 		if [[ $operation_wallpaper == "9" ]]; then wallpaper="Catalina Dark"; fi
+		if [[ $operation_wallpaper == "8" ]]; then wallpaper="El Capitan"; fi
+		if [[ $operation_wallpaper == "9" ]]; then wallpaper="Yosemite"; fi
 	
 		Patch_Volume
 	fi
@@ -279,7 +273,7 @@ Input_Operation()
 
 Download_Internet()
 {
-	curl -L -s -o /tmp/desert-deserter.zip https://github.com/rmc-team/desert-deserter/archive/master.zip
+	curl -L -s -o /tmp/desert-deserter.zip https://github.com/julian-fairfax/desert-deserter/archive/master.zip
 	unzip -q /tmp/desert-deserter.zip -d /tmp
 
 	patch_resources_path="/tmp/desert-deserter-master/resources/patch"
@@ -288,42 +282,61 @@ Download_Internet()
 
 Patch_Volume()
 {
-	echo ${text_progress}"> Patching device icons."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Patching device icons."${erase_style}
 	cp -R "$patch_resources_path"/"$wallpaper"/CoreTypes/ "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/
 
-	if [[ $machardwaretypes_contents == "1" ]]; then
-		cp -R "$patch_resources_path"/"$wallpaper"/MacHardwareTypes/ "$volume_path"/"$machardwaretypes"/MacHardwareTypes-23D5DDDA06.bundle/Contents/Resources/
+	if [[ -d "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MJTlrL7BTqUr.bundle ]]; then
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbook-retina-gold.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MJTlrL7BTqUr.bundle/Contents/Resources
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbook-retina-silver.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MJTlrL7BTqUr.bundle/Contents/Resources
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbook-retina-space-gray.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MJTlrL7BTqUr.bundle/Contents/Resources
 	fi
 
-	if [[ $machardwaretypes_contents == "2" ]]; then
-		cp "$patch_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbook-retina-gold-2018.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018b.bundle/Contents/Resources
-		cp "$patch_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbookair-2018-gold.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018c.bundle/Contents/Resources
-		cp "$patch_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbookair-2018-silver.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018c.bundle/Contents/Resources
-		cp "$patch_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbookair-2018-space-gray.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018c.bundle/Contents/Resources
+	if [[ -d "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes.bundle ]]; then
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbook-retina-rose-gold.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes.bundle/Contents/Resources
 	fi
-	echo ${move_up}${erase_line}${text_success}"+ Patched device icons."${erase_style}
 
-	echo ${text_progress}"> Patching system icons."${erase_style}
+	if [[ -d "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-3DC57F5C7A.bundle ]]; then
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookpro-13-retina-usbc-space-gray.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-3DC57F5C7A.bundle/Contents/Resources
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookpro-13-retina-usbc-silver.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-3DC57F5C7A.bundle/Contents/Resources
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookpro-13-retina-touchid-space-gray.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-BBBAA77A32.bundle/Contents/Resources
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookpro-13-retina-touchid-silver.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-BBBAA77A32.bundle/Contents/Resources
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookpro-15-retina-touchid-space-gray.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-C4EBFEA440.bundle/Contents/Resources
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookpro-15-retina-touchid-silver.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-C4EBFEA440.bundle/Contents/Resources
+	fi
+
+	if [[ -d "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-23D5DDDA06.bundle ]]; then
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.imacpro-2017.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-23D5DDDA06.bundle/Contents/Resources/
+	fi
+
+	if [[ -d "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018a.bundle ]]; then
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbook-retina-gold-2018.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018b.bundle/Contents/Resources
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookair-2018-gold.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018c.bundle/Contents/Resources
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookair-2018-silver.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018c.bundle/Contents/Resources
+		cp "$patch_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookair-2018-space-gray.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018c.bundle/Contents/Resources
+	fi
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Patched device icons."${erase_style}
+
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Patching system icons."${erase_style}
 	if [[ $volume_version_short == "10.14" ]]; then
 		cp "$patch_resources_path"/"$wallpaper"/system/Assets.car "$volume_path"/Applications/Utilities/System\ Information.app/Contents/Resources/
 	fi
 
-	if [[ $volume_version_short == "10.13" ]]; then
+	if [[ $volume_version_short == "10.1"[0-3] ]]; then
 		cp "$patch_resources_path"/"$wallpaper"/system/SystemLogo.tiff "$volume_path"/Applications/Utilities/System\ Information.app/Contents/Resources/
 	fi
-	echo ${move_up}${erase_line}${text_success}"+ Patched system icons."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Patched system icons."${erase_style}
 
-	echo ${text_progress}"> Copying system wallpapers."${erase_style}
-	if [[ $volume_version_short == "10.13" ]]; then
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Copying system wallpapers."${erase_style}
+	if [[ $volume_version_short == "10.1"[0-3] ]]; then
 		cp -R "$patch_resources_path"/wallpapers/ "$volume_path"/Library/Desktop\ Pictures/
 	fi
 
 	cp "$patch_resources_path"/wallpapers/RMC.jpg "$volume_path"/Library/Desktop\ Pictures
 	cp "$patch_resources_path"/wallpapers/Catalina\ Light.jpg "$volume_path"/Library/Desktop\ Pictures
 	cp "$patch_resources_path"/wallpapers/Catalina\ Dark.jpg "$volume_path"/Library/Desktop\ Pictures
-	echo ${move_up}${erase_line}${text_success}"+ Copied system wallpapers."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Copied system wallpapers."${erase_style}
 	
-	echo ${text_progress}"> Patching system wallpapers."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Patching system wallpapers."${erase_style}
 	if [[ $volume_version_short == "10.14" ]]; then
 		rm "$volume_path"/System/Library/CoreServices/DefaultBackground.jpg
 		rm "$volume_path"/System/Library/CoreServices/DefaultDesktop.heic
@@ -339,7 +352,7 @@ Patch_Volume()
 		fi
 	fi
 
-	if [[ $volume_version_short == "10.13" ]]; then
+	if [[ $volume_version_short == "10.1"[0-3] ]]; then
 		rm "$volume_path"/System/Library/CoreServices/DefaultDesktop.jpg
 
 		ln -s "$volume_path"/Library/Desktop\ Pictures/"$wallpaper".jpg "$volume_path"/System/Library/CoreServices/DefaultDesktop.jpg
@@ -352,53 +365,80 @@ Patch_Volume()
 			mv "$volume_path"/Library/Desktop\ Pictures/.thumbnails/High\ Sierra.jpg "$volume_path"/Library/Desktop\ Pictures/.thumbnails/Default.jpg
 		fi
 	fi
-	echo ${move_up}${erase_line}${text_success}"+ Patched system wallpapers."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Patched system wallpapers."${erase_style}
 
-	echo ${text_progress}"> Patching setup icons."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Patching setup icons."${erase_style}
 	if [[ $volume_version_short == "10.14" ]]; then
 		cp "$patch_resources_path"/"$wallpaper"/setup/Assets.car "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/
 	fi
 
 	if [[ $volume_version_short == "10.13" ]]; then
+		cp "$patch_resources_path"/"$wallpaper"/system/SystemLogo.icns "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/
+	fi
+
+	if [[ $volume_version_short == "10.12" ]]; then
 		cp "$patch_resources_path"/"$wallpaper"/system/SystemLogo.tiff "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/
 	fi
-	echo ${move_up}${erase_line}${text_success}"+ Patched setup icons."${erase_style}
+
+	if [[ $volume_version_short == "10.1"[0-1] ]]; then
+		cp "$patch_resources_path"/"$wallpaper"/system/SystemLogo.tiff "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/newX.tiff
+	fi
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Patched setup icons."${erase_style}
 
 	if [[ $volume_version_short == "10.14" ]]; then
-		echo ${text_progress}"> Patching preference panes icons."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Patching preference panes icons."${erase_style}
 			cp "$patch_resources_path"/"$wallpaper"/appearance/Assets.car "$volume_path"/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/
-		echo ${move_up}${erase_line}${text_success}"+ Patched preference panes icons."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Patched preference panes icons."${erase_style}
 	fi
 }
 
 Revert_Volume()
 {
-	echo ${text_progress}"> Removing device icons."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Removing device icons."${erase_style}
 	cp -R "$revert_resources_path"/CoreTypes/ "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/
 
-	if [[ $machardwaretypes_contents == "1" ]]; then
-		cp -R "$revert_resources_path"/MacHardwareTypes/ "$volume_path"/"$machardwaretypes"/MacHardwareTypes-23D5DDDA06.bundle/Contents/Resources/
+	if [[ -d "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MJTlrL7BTqUr.bundle ]]; then
+		cp "$revert_resources_path"/CoreTypes/com.apple.macbook-retina-gold.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MJTlrL7BTqUr.bundle/Contents/Resources
+		cp "$revert_resources_path"/CoreTypes/com.apple.macbook-retina-silver.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MJTlrL7BTqUr.bundle/Contents/Resources
+		cp "$revert_resources_path"/CoreTypes/com.apple.macbook-retina-space-gray.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MJTlrL7BTqUr.bundle/Contents/Resources
 	fi
 
-	if [[ $machardwaretypes_contents == "2" ]]; then
-		cp "$revert_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbook-retina-gold-2018.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018b.bundle/Contents/Resources
-		cp "$revert_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbookair-2018-gold.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018c.bundle/Contents/Resources
-		cp "$revert_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbookair-2018-silver.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018c.bundle/Contents/Resources
-		cp "$revert_resources_path"/"$wallpaper"/MacHardwareTypes/com.apple.macbookair-2018-space-gray.icns "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018c.bundle/Contents/Resources
+	if [[ -d "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes.bundle ]]; then
+		cp "$revert_resources_path"/CoreTypes/com.apple.macbook-retina-rose-gold.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes.bundle/Contents/Resources
 	fi
-	echo ${move_up}${erase_line}${text_success}"+ Removed device icons."${erase_style}
 
-	echo ${text_progress}"> Removing system icons."${erase_style}
+	if [[ -d "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-3DC57F5C7A.bundle ]]; then
+		cp "$revert_resources_path"/CoreTypes/com.apple.macbookpro-13-retina-usbc-space-gray.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-3DC57F5C7A.bundle/Contents/Resources
+		cp "$revert_resources_path"/CoreTypes/com.apple.macbookpro-13-retina-usbc-silver.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-3DC57F5C7A.bundle/Contents/Resources
+		cp "$revert_resources_path"/CoreTypes/com.apple.macbookpro-13-retina-touchid-space-gray.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-BBBAA77A32.bundle/Contents/Resources
+		cp "$revert_resources_path"/CoreTypes/com.apple.macbookpro-13-retina-touchid-silver.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-BBBAA77A32.bundle/Contents/Resources
+		cp "$revert_resources_path"/CoreTypes/com.apple.macbookpro-15-retina-touchid-space-gray.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-C4EBFEA440.bundle/Contents/Resources
+		cp "$revert_resources_path"/CoreTypes/com.apple.macbookpro-15-retina-touchid-silver.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-C4EBFEA440.bundle/Contents/Resources
+	fi
+
+	if [[ -d "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-23D5DDDA06.bundle ]]; then
+		cp -R "$revert_resources_path"/CoreTypes/ "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-23D5DDDA06.bundle/Contents/Resources/
+	fi
+
+	if [[ -d "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018a.bundle ]]; then
+		cp "$revert_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbook-retina-gold-2018.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018b.bundle/Contents/Resources
+		cp "$revert_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookair-2018-gold.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018c.bundle/Contents/Resources
+		cp "$revert_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookair-2018-silver.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018c.bundle/Contents/Resources
+		cp "$revert_resources_path"/"$wallpaper"/CoreTypes/com.apple.macbookair-2018-space-gray.icns "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018c.bundle/Contents/Resources
+	fi
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Removed device icons."${erase_style}
+
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Removing system icons."${erase_style}
 	if [[ $volume_version_short == "10.14" ]]; then
 		cp "$revert_resources_path"/system/Assets.car "$volume_path"/Applications/Utilities/System\ Information.app/Contents/Resources/
 	fi
 
-	if [[ $volume_version_short == "10.13" ]]; then
+	if [[ $volume_version_short == "10.1"[0-3] ]]; then
 		cp "$revert_resources_path"/system/SystemLogo.tiff "$volume_path"/Applications/Utilities/System\ Information.app/Contents/Resources/
 	fi
-	echo ${move_up}${erase_line}${text_success}"+ Removed system icons."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Removed system icons."${erase_style}
 
-	echo ${text_progress}"> Removing system wallpapers."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Removing system wallpapers."${erase_style}
 	if [[ $volume_version_short == "10.13" ]]; then
 		rm "$volume_path"/Library/Desktop\ Pictures/Desert\ 5.jpg
 		rm "$volume_path"/Library/Desktop\ Pictures/Desert\ 6.jpg
@@ -409,9 +449,9 @@ Revert_Volume()
 	rm "$volume_path"/Library/Desktop\ Pictures/RMC.jpg
 	rm "$volume_path"/Library/Desktop\ Pictures/Catalina\ Light.jpg
 	rm "$volume_path"/Library/Desktop\ Pictures/Catalina\ Dark.jpg
-	echo ${move_up}${erase_line}${text_success}"+ Removed system wallpapers."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Removed system wallpapers."${erase_style}
 	
-	echo ${text_progress}"> Removing system wallpapers."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Removing system wallpapers."${erase_style}
 	if [[ $volume_version_short == "10.14" ]]; then
 		rm "$volume_path"/System/Library/CoreServices/DefaultBackground.jpg
 		rm "$volume_path"/System/Library/CoreServices/DefaultDesktop.heic
@@ -427,7 +467,7 @@ Revert_Volume()
 		fi
 	fi
 
-	if [[ $volume_version_short == "10.13" ]]; then
+	if [[ $volume_version_short == "10.1"[0-3] ]]; then
 		rm "$volume_path"/System/Library/CoreServices/DefaultDesktop.jpg
 
 		ln -s "$volume_path"/Library/Desktop\ Pictures/High\ Sierra.jpg "$volume_path"/System/Library/CoreServices/DefaultDesktop.jpg
@@ -440,22 +480,30 @@ Revert_Volume()
 			mv "$volume_path"/Library/Desktop\ Pictures/.thumbnails/Default.jpg "$volume_path"/Library/Desktop\ Pictures/.thumbnails/High\ Sierra.jpg
 		fi
 	fi
-	echo ${move_up}${erase_line}${text_success}"+ Removed system wallpapers."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Removed system wallpapers."${erase_style}
 
-	echo ${text_progress}"> Removing setup icons."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Removing setup icons."${erase_style}
 	if [[ $volume_version_short == "10.14" ]]; then
 		cp "$revert_resources_path"/setup/Assets.car "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/
 	fi
-
+	
 	if [[ $volume_version_short == "10.13" ]]; then
+		cp "$revert_resources_path"/system/SystemLogo.icns "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/
+	fi
+
+	if [[ $volume_version_short == "10.12" ]]; then
 		cp "$revert_resources_path"/system/SystemLogo.tiff "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/
 	fi
-	echo ${move_up}${erase_line}${text_success}"+ Removed setup icons."${erase_style}
+
+	if [[ $volume_version_short == "10.1"[0-1] ]]; then
+		cp "$revert_resources_path"/system/SystemLogo.tiff "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/newX.tiff
+	fi
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Removed setup icons."${erase_style}
 
 	if [[ $volume_version_short == "10.14" ]]; then
-		echo ${text_progress}"> Removing preference panes icons."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Removing preference panes icons."${erase_style}
 			cp "$revert_resources_path"/appearance/Assets.car "$volume_path"/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/
-		echo ${move_up}${erase_line}${text_success}"+ Removed preference panes icons."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Removed preference panes icons."${erase_style}
 	fi
 }
 
@@ -467,17 +515,17 @@ Repair()
 
 Repair_Permissions()
 {
-	echo ${text_progress}"> Repairing permissions."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Repairing permissions."${erase_style}
 
 	Repair "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/
 
 	if [[ $machardwaretypes_1 == "yes" ]]; then
-		Repair "$volume_path"/"$machardwaretypes"/MacHardwareTypes-23D5DDDA06.bundle/Contents/Resources/
+		Repair "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-23D5DDDA06.bundle/Contents/Resources/
 	fi
 
 	if [[ $machardwaretypes_2 == "yes" ]]; then
-		Repair "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018b.bundle/Contents/Resources/
-		Repair "$volume_path"/"$machardwaretypes"/MacHardwareTypes-2018c.bundle/Contents/Resources/
+		Repair "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018b.bundle/Contents/Resources/
+		Repair "$volume_path"/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MacHardwareTypes-2018c.bundle/Contents/Resources/
 	fi
 
 	Repair "$volume_path"/Applications/Utilities/System\ Information.app/Contents/Resources/
@@ -524,40 +572,40 @@ Repair_Permissions()
 
 	Repair "$volume_path"/System/Library/CoreServices/Setup\ Assistant.app/Contents/Resources/
 
-	echo ${move_up}${erase_line}${text_success}"+ Repaired permissions."${erase_style}	
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Repaired permissions."${erase_style}	
 }
 
 Rebuild_Cache()
 {
-	echo ${text_progress}"> Rebuilding cache."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${text_progress}"> Rebuilding cache."${erase_style}
 
 	find "$volume_path"/private/var/folders/ -name com.apple.dock.iconcache -exec rm {} \;
 	rm -rf "$volume_path"/Library/Caches/com.apple.iconservices.store
 
-	echo ${move_up}${erase_line}${text_success}"+ Rebuilt cache."${erase_style}
+	echo -e $(date "+%b %m %H:%M:%S") ${move_up}${erase_line}${text_success}"+ Rebuilt cache."${erase_style}
 }
 
 Input_Restart()
 {
 	if [[ $(diskutil info "$volume_name"|grep "Mount Point") == *"/" && ! $(diskutil info "$volume_name"|grep "Mount Point") == *"/Volumes" ]]; then
-		echo ${text_message}"/ Would you like to restart now?"${erase_style}
-		echo ${text_message}"/ Input an operation number."${erase_style}
-		echo ${text_message}"/     1 - No"${erase_style}
-		echo ${text_message}"/     2 - Yes"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Would you like to restart now?"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Input an operation number."${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     1 - No"${erase_style}
+		echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/     2 - Yes"${erase_style}
 		Input_On
-		read -e -p "/ " operation_restart
+		read -e -p "$(date "+%b %m %H:%M:%S") / " operation_restart
 		Input_Off
 
 		if [[ $operation_restart == "1" ]]; then
-			echo ${text_message}"/ Restart your machine soon."${erase_style}
-			echo ${text_message}"/ Thank you for using Desert Deserter"${erase_style}
+			echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Restart your machine soon."${erase_style}
+			echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Thank you for using Desert Deserter"${erase_style}
 			Input_On
 			exit
 		fi
 
 		if [[ $operation_restart == "2" ]]; then
-			echo ${text_message}"/ Your machine will restart soon."${erase_style}
-			echo ${text_message}"/ Thank you for using Desert Deserter."${erase_style}
+			echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Your machine will restart soon."${erase_style}
+			echo -e $(date "+%b %m %H:%M:%S") ${text_message}"/ Thank you for using Desert Deserter."${erase_style}
 			reboot
 		fi
 	fi
@@ -576,7 +624,6 @@ Check_Options
 Input_Volume
 Check_Volume_Version
 Check_Volume_Support
-Volume_Variables
 Input_Operation
 Repair_Permissions
 Rebuild_Cache
